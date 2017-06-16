@@ -109,10 +109,6 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 	}
 	u := s.net.baseURL.ResolveReference(rel)
 
-	log.Print(s.method)
-	log.Print(u)
-	log.Print(buf)
-
 	req, err = http.NewRequest(s.method, u.String(), buf)
 	if err != nil {
 		return nil, err
