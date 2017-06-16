@@ -11,20 +11,12 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
-
-// Config 请求包初始化参数配置
-type Config struct {
-	BaseURL  *url.URL      // 请求根地址
-	Overtime time.Duration // 网络超时时间
-}
 
 // Net 请求结构体
 type Net struct {
-	client   *http.Client  // 可重复使用的client
-	baseURL  *url.URL      // 请求根地址
-	overtime time.Duration // 网络超时时间
+	client  *http.Client // 可重复使用的client
+	baseURL *url.URL     // 请求根地址
 }
 
 // SuperAgent 请求参数
@@ -43,12 +35,9 @@ const (
 )
 
 // New 初始化一个请求包对象
-func New(c *Config) *Net {
-	if c == nil {
-		c = &Config{Overtime: time.Second * 10}
-	}
+func New() *Net {
 	return &Net{
-		client: http.DefaultClient, baseURL: c.BaseURL, overtime: c.Overtime,
+		client: http.DefaultClient,
 	}
 }
 
@@ -107,8 +96,7 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 	case contentXML:
 		err = xml.NewEncoder(buf).Encode(s.body)
 	case contentText:
-	default:
-		buf = nil
+		_, err = buf.WriteString(s.body.(string))
 	}
 	if err != nil {
 		return nil, err
@@ -120,6 +108,10 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 		return nil, err
 	}
 	u := s.net.baseURL.ResolveReference(rel)
+
+	log.Print(s.method)
+	log.Print(u)
+	log.Print(buf)
 
 	req, err = http.NewRequest(s.method, u.String(), buf)
 	if err != nil {
