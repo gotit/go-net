@@ -125,11 +125,14 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 	// 执行网络请求
 	resp, err := s.net.client.Do(req)
 	if err != nil {
-		// If we got an error, and the context has been canceled, the context's error is probably more useful.
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
+
+		if ctx != nil {
+			// If we got an error, and the context has been canceled, the context's error is probably more useful.
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+			}
 		}
 
 		// If the error type is *url.Error, sanitize its URL before returning.
