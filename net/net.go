@@ -41,6 +41,13 @@ func New() *Net {
 	}
 }
 
+// NewWithClient 初始化一个请求包对象，自己传入Client
+func NewWithClient(client *http.Client) *Net {
+	return &Net{
+		client: client,
+	}
+}
+
 // Get 发送 Get 请求
 func (n *Net) Get(url string) *SuperAgent {
 	return &SuperAgent{net: n, url: url, method: "GET"}
@@ -115,7 +122,7 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 	}
 
 	if len(s.contentType) > 0 {
-		req.Header.Set("Content-Type", contentText)
+		req.Header.Set("Content-Type", s.contentType)
 	}
 
 	if ctx != nil {
