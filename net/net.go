@@ -21,11 +21,12 @@ type Net struct {
 
 // SuperAgent 请求参数
 type SuperAgent struct {
-	net         *Net        // 当前请求包实例
-	url         string      // 请求地址
-	method      string      // 请求方式
-	contentType string      // 请求类型
-	body        interface{} // 发送请求的body
+	net         *Net              // 当前请求包实例
+	url         string            // 请求地址
+	method      string            // 请求方式
+	contentType string            // 请求类型
+	body        interface{}       // 发送请求的body
+	header      map[string]string // 头文件
 }
 
 const (
@@ -39,6 +40,11 @@ func New() *Net {
 	return &Net{
 		client: http.DefaultClient,
 	}
+}
+
+// GetClient 获取http client
+func (n *Net) GetClient() *http.Client {
+	return n.client
 }
 
 // NewWithClient 初始化一个请求包对象，自己传入Client
@@ -89,6 +95,12 @@ func (s *SuperAgent) Text(body string) *SuperAgent {
 	return s
 }
 
+// Header 设置请求头内容
+func (s *SuperAgent) Header(header map[string]string) *SuperAgent {
+	s.header = header
+	return s
+}
+
 // End 开始http请求
 func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, error) {
 	if len(s.contentType) > 0 && s.body == nil {
@@ -123,6 +135,9 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 
 	if len(s.contentType) > 0 {
 		req.Header.Set("Content-Type", s.contentType)
+	}
+	for key, value := range s.header {
+		req.Header.Set(key, value)
 	}
 
 	if ctx != nil {
