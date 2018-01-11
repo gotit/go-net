@@ -189,10 +189,8 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 			io.Copy(w, resp.Body)
 		} else {
 			body, err := ioutil.ReadAll(resp.Body)
-			if !strings.Contains(string(body), "ip_list") {
-				if s.net.isRelase {
-					log.Printf("url %s body %s", req.URL.Path, string(body))
-				}
+			if !s.net.isRelase {
+				log.Printf("url: %s , response body: %s", s.url, string(body))
 			}
 
 			// 默认认为 contentType 不为xml的情况下，所有返回都用json解析
