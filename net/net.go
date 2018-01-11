@@ -10,13 +10,15 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
 // Net 请求结构体
 type Net struct {
-	client  *http.Client // 可重复使用的client
-	baseURL *url.URL     // 请求根地址
+	client   *http.Client // 可重复使用的client
+	baseURL  *url.URL     // 请求根地址
+	isRelase bool         // 是否是生成环境
 }
 
 // SuperAgent 请求参数
@@ -37,8 +39,17 @@ const (
 
 // New 初始化一个请求包对象
 func New() *Net {
+	var release bool
+	netMode := os.Getenv("NET_MODE")
+	if len(netMode) == 0 {
+		release = false
+	} else if netMode == "release" {
+		release = true
+	}
+
 	return &Net{
-		client: http.DefaultClient,
+		client:   http.DefaultClient,
+		isRelase: release,
 	}
 }
 
@@ -179,7 +190,9 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 		} else {
 			body, err := ioutil.ReadAll(resp.Body)
 			if !strings.Contains(string(body), "ip_list") {
-				log.Printf("url %s body %s", req.URL.Path, string(body))
+				if s.net.isRelase {
+					log.Printf("url %s body %s", req.URL.Path, string(body))
+				}
 			}
 
 			// 默认认为 contentType 不为xml的情况下，所有返回都用json解析
