@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -188,7 +189,8 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, resp.Body)
 		} else {
-			body, err := ioutil.ReadAll(resp.Body)
+			var body []byte
+			body, err = ioutil.ReadAll(resp.Body)
 			if !s.net.isRelase {
 				log.Printf("url: %s , response body: %s", s.url, string(body))
 			}
@@ -202,6 +204,9 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 
 			if err == io.EOF {
 				err = nil // ignore EOF errors caused by empty response body
+			}
+			if resp.StatusCode != http.StatusOK {
+				err = fmt.Errorf(string(body))
 			}
 		}
 	}

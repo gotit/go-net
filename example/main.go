@@ -29,5 +29,5 @@ func main() {
 		}
 		ctx.JSON(http.StatusOK, &testRespose{Param: req.Param, Msg: "请求成功"})
 	})
-	log.Fatal(router.Run(":80"))
+	log.Fatal(router.Run(":8080"))
 }
