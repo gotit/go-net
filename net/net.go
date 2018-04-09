@@ -185,29 +185,29 @@ func (s *SuperAgent) End(ctx context.Context, v interface{}) (*http.Response, er
 		resp.Body.Close()
 	}()
 
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
-		} else {
-			var body []byte
-			body, err = ioutil.ReadAll(resp.Body)
-			if !s.net.isRelase {
-				log.Printf("url: %s , response body: %s", s.url, string(body))
-			}
+	if w, ok := v.(io.Writer); ok {
+		io.Copy(w, resp.Body)
+	} else {
+		var body []byte
+		body, err = ioutil.ReadAll(resp.Body)
+		if !s.net.isRelase {
+			log.Printf("url: %s , response body: %s", s.url, string(body))
+		}
 
+		if v != nil {
 			// 默认认为 contentType 不为xml的情况下，所有返回都用json解析
 			if strings.EqualFold(s.contentType, contentXML) {
 				err = xml.Unmarshal(body, v)
 			} else {
 				err = json.Unmarshal(body, v)
 			}
+		}
 
-			if err == io.EOF {
-				err = nil // ignore EOF errors caused by empty response body
-			}
-			if resp.StatusCode != http.StatusOK {
-				err = fmt.Errorf(string(body))
-			}
+		if err == io.EOF {
+			err = nil // ignore EOF errors caused by empty response body
+		}
+		if resp.StatusCode != http.StatusOK {
+			err = fmt.Errorf(string(body))
 		}
 	}
 
